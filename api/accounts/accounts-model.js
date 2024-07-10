@@ -1,10 +1,10 @@
 const db = require('../../data/db-config');
 
-const getAll = () => {
+const getAll = async () => {
   return db('accounts');
 }
 
-const getById = id => {
+const getById = async id => {
   return db('accounts')
     .where({ id });
 }
@@ -14,8 +14,10 @@ const create = account => {
     .insert(account);
 }
 
-const updateById = (id, account) => {
-  // DO YOUR MAGIC
+const updateById = (id, changes) => {
+  return db('accounts')
+    .where({ id })
+    .update(changes)
 }
 
 const deleteById = id => {
