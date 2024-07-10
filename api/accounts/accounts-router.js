@@ -1,30 +1,38 @@
 const router = require('express').Router()
 
-const { getAll, getById } = require('./accounts-model');
+const {
+  getAll,
+  getById,
+  create,
+} = require('./accounts-model');
 
-router.get('/', (req, res, next) => {
-  getAll()
-    .then(accounts => {
-      res.json(accounts);
-    })
-    .catch(() => {
-      next({ status: 500, message: 'Cannot GET accounts...' });
-    });
+router.get('/', async (req, res, next) => {
+  try {
+    const accounts = await getAll();
+    res.json(accounts);
+  } catch (error) {
+    next({ ...error, message: 'Cannot GET accounts...' });
+  }
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   const { id } = req.params;
-  getById(id)
-    .then(account => {
-      res.json(account);
-    })
-    .catch(() => {
-      next({ status: 500, message: `Cannot GET account with id ${id}` })
-    });
+  try {
+    const account = await getById(id);
+    res.json(account);
+  } catch (error) {
+    next({ ...error, message: `Cannot GET account with id ${id}...` });
+  }
 });
 
-router.post('/', (req, res, next) => {
-  // DO YOUR MAGIC
+router.post('/', async (req, res, next) => {
+  try {
+    const id = await create(req.body);
+    const newAccount = await getById(id);
+    res.status(201).json(newAccount);
+  } catch (error) {
+    next({ ...error, message: 'Cannot POST new account...' });
+  }
 })
 
 router.put('/:id', (req, res, next) => {
