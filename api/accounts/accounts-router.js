@@ -1,18 +1,27 @@
 const router = require('express').Router()
 
-const { getAll } = require('./accounts-model');
+const { getAll, getById } = require('./accounts-model');
 
 router.get('/', (req, res, next) => {
   getAll()
     .then(accounts => {
       res.json(accounts);
     })
-    .catch(next);
-})
+    .catch(() => {
+      next({ status: 500, message: 'Cannot GET accounts...' });
+    });
+});
 
 router.get('/:id', (req, res, next) => {
-  // DO YOUR MAGIC
-})
+  const { id } = req.params;
+  getById(id)
+    .then(account => {
+      res.json(account);
+    })
+    .catch(() => {
+      next({ status: 500, message: `Cannot GET account with id ${id}` })
+    });
+});
 
 router.post('/', (req, res, next) => {
   // DO YOUR MAGIC
