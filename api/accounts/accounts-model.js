@@ -17,11 +17,13 @@ const create = account => {
 const updateById = (id, changes) => {
   return db('accounts')
     .where({ id })
-    .update(changes)
+    .update(changes);
 }
 
 const deleteById = id => {
-  // DO YOUR MAGIC
+  return db('accounts')
+    .where({ id })
+    .del();
 }
 
 module.exports = {
