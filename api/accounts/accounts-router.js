@@ -8,26 +8,42 @@ const {
   deleteById
 } = require('./accounts-model');
 
+const {
+  checkAccountPayload,
+  checkAccountId,
+  checkAccountNameUnique
+} = require('./accounts-middleware');
+
+const postMW = [
+  checkAccountPayload,
+  checkAccountNameUnique
+]
+
+const putMW = [
+  checkAccountId,
+  checkAccountPayload,
+]
+
 router.get('/', async (req, res, next) => {
   try {
     const accounts = await getAll();
     res.json(accounts);
   } catch (error) {
-    next(error);
+    next({ status: 500, message: `GET to / failed...` });
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', [checkAccountId], async (req, res, next) => {
   const { id } = req.params;
   try {
     const account = await getById(id);
     res.json(account);
   } catch (error) {
-    next(error);
+    next({ status: 500, message: `GET to /${id} failed...` });
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', postMW, async (req, res, next) => {
   try {
     const id = await create(req.body);
     const newAccount = await getById(id);
@@ -37,7 +53,7 @@ router.post('/', async (req, res, next) => {
   }
 })
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', putMW, async (req, res, next) => {
   const { id } = req.params;
   try {
     await updateById(id, req.body);
@@ -48,7 +64,7 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', [checkAccountId], async (req, res, next) => {
   const { id } = req.params;
   try {
     await deleteById(id);
@@ -60,7 +76,8 @@ router.delete('/:id', async (req, res, next) => {
 
 router.use((error, req, res, next) => { // eslint-disable-line
   console.error(error);
-  res.status(500).json({ message: `${req.method} to /api/accounts${req.url} failed...` });
+  const { status, message } = error;
+  res.status(status).json({ message });
 })
 
 module.exports = router;
