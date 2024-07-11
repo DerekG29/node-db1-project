@@ -5,7 +5,8 @@ const db = require('../../data/db-config');
 const errors = {
   length: 'name of account must be between 3 and 100',
   required: 'name and budget are required',
-  limit: 'budget of account is to large or too small'
+  limit: 'budget of account is too large or too small',
+  num: 'budget of account must be a number',
 }
 
 const schema = object({
@@ -15,6 +16,7 @@ const schema = object({
     .max(100, errors.length)
     .required(errors.required),
   budget: number()
+    .typeError(errors.num)
     .min(0, errors.limit)
     .max(1000000, errors.limit)
     .required(errors.required)
