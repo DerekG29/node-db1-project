@@ -26,7 +26,7 @@ const putMW = [
 
 router.get('/', async (req, res, next) => {
   try {
-    const accounts = await getAll();
+    const accounts = await getAll(req.query);
     res.json(accounts);
   } catch (error) {
     next({ status: 500, message: `GET to / failed...` });
