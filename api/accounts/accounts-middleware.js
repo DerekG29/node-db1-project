@@ -1,13 +1,59 @@
-exports.checkAccountPayload = (req, res, next) => {
-  // DO YOUR MAGIC
-  // Note: you can either write "manual" validation logic
-  // or use the Yup library (not currently installed)
+const { object, string, number } = require('yup');
+const db = require('../../data/db-config');
+
+
+const errors = {
+  length: 'name of account must be between 3 and 100',
+  required: 'name and budget are required',
+  limit: 'budget of account is to large or too small'
 }
 
-exports.checkAccountNameUnique = (req, res, next) => {
-  // DO YOUR MAGIC
+const schema = object({
+  name: string()
+    .trim()
+    .min(3, errors.length)
+    .max(100, errors.length)
+    .required(errors.required),
+  budget: number()
+    .min(0, errors.limit)
+    .max(1000000, errors.limit)
+    .required(errors.required)
+});
+
+const checkAccountPayload = async (req, res, next) => {
+  try {
+    const payload = await schema.validate(req.body);
+    req.body = payload;
+    next();
+  } catch (error) {
+    const message = error.errors[0];
+    next({ status: 400, message });
+  }
 }
 
-exports.checkAccountId = (req, res, next) => {
-  // DO YOUR MAGIC
+const checkAccountNameUnique = async (req, res, next) => {
+  const { name } = req.body;
+  const account = await db('accounts').where({ name }).first();
+  if (!account) {
+    next();
+  } else {
+    next({ status: 400, message: 'that name is taken' });
+  }
+}
+
+const checkAccountId = async (req, res, next) => {
+  const { id } = req.params;
+  const account = await db('accounts').where({ id }).first();
+  if (account) {
+    req.account = account;
+    next();
+  } else {
+    next({ status: 404, message: 'account not found' });
+  }
+} 
+
+module.exports = { 
+  checkAccountPayload,
+  checkAccountNameUnique,
+  checkAccountId
 }
