@@ -9,30 +9,50 @@ const errors = {
   num: 'budget of account must be a number',
 }
 
-const schema = object({
-  name: string()
-    .trim()
-    .min(3, errors.length)
-    .max(100, errors.length)
-    .required(errors.required),
-  budget: number()
-    .typeError(errors.num)
-    .min(0, errors.limit)
-    .max(1000000, errors.limit)
-    .required(errors.required)
-});
+// const schema = object({
+//   name: string()
+//     .trim()
+//     .min(3, errors.length)
+//     .max(100, errors.length)
+//     .required(errors.required),
+//   budget: number()
+//     .typeError(errors.num)
+//     .min(0, errors.limit)
+//     .max(1000000, errors.limit)
+//     .required(errors.required)
+// });
 
 const checkAccountPayload = async (req, res, next) => {
+  // try {
+  //   const payload = await schema.validate(req.body);
+  //   req.body = payload;
+  //   next();
+  // } catch (error) {
+  //   const message = error.errors[0];
+  //   next({ status: 400, message });
+  // }
+  let { name, budget } = req.body;
   try {
-    const payload = await schema.validate(req.body);
-    req.body = payload;
+    if (name === undefined || budget === undefined) {
+      throw new Error(errors.required)
+    }
+    name = name.trim();
+    if (name.length < 3 || name.length > 100) {
+      throw new Error(errors.length);
+    }
+    budget = parseFloat(budget);
+    if (isNaN(budget)) {
+      throw new Error(errors.num);
+    }
+    if (budget < 0 || budget > 1000000) {
+      throw new Error(errors.limit);
+    }
+    req.body = { name, budget };
     next();
   } catch (error) {
-    const message = error.errors[0];
-    next({ status: 400, message });
+    next({ status: 400, message: error.message });
   }
 }
-
 const checkAccountNameUnique = async (req, res, next) => {
   const { name } = req.body;
   const account = await db('accounts').where({ name }).first();
