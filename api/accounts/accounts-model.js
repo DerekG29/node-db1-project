@@ -1,10 +1,14 @@
 const db = require('../../data/db-config');
 
-const getAll = async () => {
-  return db('accounts');
+const getAll = (queries) => {
+  const { limit, sortby, sortdir } = queries;
+  const query = db('accounts')
+    .orderBy(sortby || 'id', sortdir || 'asc')
+    .limit(limit || 1000)
+  return query;
 }
 
-const getById = async id => {
+const getById = id => {
   return db('accounts')
     .where({ id })
     .first();
